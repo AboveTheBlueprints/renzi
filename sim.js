@@ -1,10 +1,11 @@
 // 人字：跟 人字.py 一字一样（拿 对.py 逐串对过）。
 const NAMES = ['你', '老的', '小的', '伴', '大个', '灰背', '白额'];
 const MAXE = { '你': 100, '老的': 70, '小的': 80, '伴': 100, '大个': 110, '灰背': 100, '白额': 95 };
-const LAKE = 30;
-const NEAR = { 10: '湖还远，只是天边一道亮。', 20: '湖近了一点，看得见岸上的苇子。', 26: '湖就在底下了，还差几下。' };
+const LAKE = 14;
+const START = { '你': 0.6, '老的': 0.55, '小的': 0.55, '伴': 0.55, '大个': 0.55, '灰背': 0.4, '白额': 0.55 };
+const NEAR = { 4: '湖近了一点，看得见岸上的苇子。', 10: '湖就在底下了，还差几下。' };
 const LEADC = 6.0, ARMC = 2.1, ARMD = 0.25, ARMMIN = 1.5;
-const WIND = { 9: '左', 10: '左', 11: '左', 19: '右', 20: '右', 21: '右', 22: '右' };
+const WIND = { 3: '右', 4: '右', 5: '右', 6: '右' };
 
 function pyRound(x) {
   const f = Math.floor(x), d = x - f;
@@ -20,7 +21,7 @@ function without(arr, x) { const i = arr.indexOf(x); if (i >= 0) arr.splice(i, 1
 
 class Flock {
   constructor() {
-    this.E = Object.assign({}, MAXE);
+    this.E = {}; for (const n of NAMES) this.E[n] = Math.round(MAXE[n] * START[n]);
     this.lead = '灰背';
     this.L = ['你', '小的', '老的'];
     this.R = ['大个', '伴', '白额'];

@@ -9,7 +9,7 @@
   main { max-width: 640px; margin: 0 auto; padding: 24px 16px 100px; }
   h1 { font-size: 22px; font-weight: normal; letter-spacing: 6px; margin: 0 0 10px; }
   .intro { color: #5a5446; font-size: 15px; margin: 0 0 12px; }
-  #sky { position: relative; height: 230px; margin: 8px 0 4px; background: linear-gradient(#c9ccd2, #e3d7c3); border-radius: 4px; overflow: hidden; }
+  #sky { position: relative; height: 275px; margin: 8px 0 4px; background: linear-gradient(#c9ccd2, #e3d7c3); border-radius: 4px; overflow: hidden; }
   .g { position: absolute; width: 64px; margin-left: -32px; text-align: center; font-size: 14px; line-height: 1.2; transition: left .35s, top .35s; }
   .g .n { display: inline-block; padding: 1px 4px; border-radius: 3px; }
   .g.me .n { background: #2b2a26; color: #f3efe4; }
@@ -43,7 +43,7 @@
 <body>
 <main>
 <h1>人字</h1>
-<p class="intro">傍晚。七只雁排成一个人字往南飞，前头远远有一片湖。黑底的那只是你。</p>
+<p class="intro">飞了一整天，天快黑了。七只雁排成一个人字往南，前头那片湖还有十几下。黑底的那只是你。</p>
 <div id="sky"><div id="lake"></div><div id="wind"></div></div>
 <div id="now"></div>
 <div id="pad"></div>
@@ -75,7 +75,7 @@ function drawSky() {
   if (flock.lead) put(flock.lead, cx, top);
   flock.L.forEach((n, i) => put(n, cx - dx * (i + 1), top + dy * (i + 1)));
   flock.R.forEach((n, i) => put(n, cx + dx * (i + 1), top + dy * (i + 1)));
-  document.getElementById('lake').style.height = Math.round(Math.max(0, flock.step - 18) / (LAKE - 18) * 34) + 'px';
+  document.getElementById('lake').style.height = Math.round(Math.max(0, flock.step - 2) / (LAKE - 2) * 34) + 'px';
   const w = document.getElementById('wind');
   const nxt = flock.step + 1;
   if (WIND[flock.step]) { w.textContent = '风从' + WIND[flock.step] + '边来'; w.style.left = WIND[flock.step] === '左' ? '8px' : ''; w.style.right = WIND[flock.step] === '右' ? '8px' : ''; }
