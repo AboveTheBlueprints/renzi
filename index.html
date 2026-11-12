@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>人字</title>
+<style>
+  body { background: #e9e6dc; color: #2b2a26; font: 17px/1.75 "PingFang SC", "Noto Serif SC", serif; margin: 0; }
+  main { max-width: 640px; margin: 0 auto; padding: 24px 16px 100px; }
+  h1 { font-size: 22px; font-weight: normal; letter-spacing: 6px; margin: 0 0 10px; }
+  .intro { color: #5a5446; font-size: 15px; margin: 0 0 12px; }
+  #sky { position: relative; height: 230px; margin: 8px 0 4px; background: linear-gradient(#c9ccd2, #e3d7c3); border-radius: 4px; overflow: hidden; }
+  .g { position: absolute; width: 64px; margin-left: -32px; text-align: center; font-size: 14px; line-height: 1.2; transition: left .35s, top .35s; }
+  .g .n { display: inline-block; padding: 1px 4px; border-radius: 3px; }
+  .g.me .n { background: #2b2a26; color: #f3efe4; }
+  .g.young .n { border-bottom: 2px solid #8a7d66; }
+  .g .b { height: 5px; background: #d6d0c2; margin: 3px 8px 0; border-radius: 2px; overflow: hidden; }
+  .g .b i { display: block; height: 100%; background: #4f5b45; }
+  .g .b i.low { background: #a0492e; }
+  #lake { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: #8fa3a8; transition: height .4s; }
+  #wind { position: absolute; top: 6px; font-size: 13px; color: #5a5446; }
+  #now p { margin: 0; }
+  #now p.head { color: #8a8170; font-size: 14px; }
+  #now p.look { font-weight: bold; }
+  #pad { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  button { font: inherit; font-size: 16px; padding: 6px 14px; border: 1px solid #8a7d66; background: #f8f4ea; color: #2b2a26; border-radius: 3px; cursor: pointer; }
+  button:hover { background: #fffaf0; }
+  button:disabled { color: #b8b0a0; border-color: #cfc7b6; cursor: default; background: #f1ede3; }
+  #end { margin-top: 14px; }
+  #end p { margin: 0; }
+  table.h { border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+  table.h td { width: 14px; height: 18px; padding: 0; }
+  table.h td.nm { width: auto; padding-right: 8px; white-space: nowrap; }
+  table.h td.c0 { background: #2b2a26; }
+  table.h td.c1 { background: #8a8170; }
+  table.h td.c2 { background: #aea590; }
+  table.h td.c3 { background: #cbc3ae; }
+  table.h td.c4 { background: #ddd6c4; }
+  table.h tr.me td.nm { font-weight: bold; }
+  .keys { color: #9a9080; font-size: 13px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<main>
+<h1>人字</h1>
+<p class="intro">傍晚。七只雁排成一个人字往南飞，前头远远有一片湖。黑底的那只是你。</p>
+<div id="sky"><div id="lake"></div><div id="wind"></div></div>
+<div id="now"></div>
+<div id="pad"></div>
+<div id="end"></div>
+<p class="keys">跟：空格</p>
+</main>
+<script src="sim.js"></script>
+<script>
+const ACTS = [['跟', '跟（不动）'], ['前', '往前'], ['后', '往后'], ['换边', '换边'], ['领', '领头'], ['退', '退下来']];
+let flock, acts;
+
+function el(tag, cls, txt) { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+
+function drawSky() {
+  const sky = document.getElementById('sky');
+  for (const e of [...sky.querySelectorAll('.g')]) e.remove();
+  const W = sky.clientWidth, cx = W / 2, top = 18, dy = 46, dx = Math.min(64, (W / 2 - 36) / 4);
+  const put = (n, x, y) => {
+    const d = el('div', 'g' + (n === '你' ? ' me' : '') + (n === '小的' ? ' young' : ''));
+    d.style.left = x + 'px'; d.style.top = y + 'px';
+    d.appendChild(el('span', 'n', n));
+    const b = el('div', 'b'), i = el('i');
+    const f = Math.max(0, flock.E[n] / MAXE[n]);
+    i.style.width = (f * 100) + '%';
+    if (f < 0.3) i.className = 'low';
+    b.appendChild(i); d.appendChild(b);
+    sky.appendChild(d);
+  };
+  if (flock.lead) put(flock.lead, cx, top);
+  flock.L.forEach((n, i) => put(n, cx - dx * (i + 1), top + dy * (i + 1)));
+  flock.R.forEach((n, i) => put(n, cx + dx * (i + 1), top + dy * (i + 1)));
+  document.getElementById('lake').style.height = Math.round(Math.max(0, flock.step - 18) / (LAKE - 18) * 34) + 'px';
+  const w = document.getElementById('wind');
+  const nxt = flock.step + 1;
+  if (WIND[flock.step]) { w.textContent = '风从' + WIND[flock.step] + '边来'; w.style.left = WIND[flock.step] === '左' ? '8px' : ''; w.style.right = WIND[flock.step] === '右' ? '8px' : ''; }
+  else w.textContent = '';
+}
+
+function over() { return !flock.flying().includes('你') || flock.step >= LAKE; }
+
+function pad() {
+  const p = document.getElementById('pad'); p.innerHTML = '';
+  if (over()) return;
+  const lead = flock.lead === '你';
+  for (const [a, t] of ACTS) {
+    const b = el('button', null, t);
+    const off = (lead && ['前', '后', '换边', '领'].includes(a)) || (!lead && a === '退');
+    b.disabled = off;
+    b.onclick = () => go(a);
+    p.appendChild(b);
+  }
+}
+
+function go(a) {
+  if (over()) return;
+  acts.push(a);
+  const out = flock.tick(a);
+  const now = document.getElementById('now'); now.innerHTML = '';
+  const w = WIND[flock.step] ? '　风从' + WIND[flock.step] + '边来' : '';
+  now.appendChild(el('p', 'head', '第 ' + flock.step + ' 下' + w));
+  for (const o of out) now.appendChild(el('p', o.includes('回头看了你') ? 'look' : null, o));
+  if (NEAR[flock.step]) now.appendChild(el('p', null, NEAR[flock.step]));
+  drawSky(); pad();
+  if (over()) end();
+}
+
+function end() {
+  const e = document.getElementById('end'); e.innerHTML = '';
+  if (flock.flying().includes('你')) e.appendChild(el('p', null, '湖到了。落在水上的有 ' + flock.flying().length + ' 只。'));
+  else e.appendChild(el('p', null, '你落在田里，看着它们往南去，还剩 ' + flock.flying().length + ' 只。'));
+  for (const [st, n] of flock.down) if (n !== '你') e.appendChild(el('p', null, n + '，第 ' + st + ' 下落下去的。'));
+  e.appendChild(el('p', null, '　'));
+  e.appendChild(el('p', null, '一路上谁飞在哪（最黑的一格是在头上，越往后越淡，空着是已经不在了）：'));
+  const t = el('table', 'h');
+  for (const n of NAMES) {
+    const tr = el('tr', n === '你' ? 'me' : null);
+    tr.appendChild(el('td', 'nm', n));
+    for (const c of flock.hist[n]) {
+      const td = el('td');
+      if (c === '^') td.className = 'c0';
+      else if (c !== ' ') td.className = 'c' + Math.min(4, +c);
+      tr.appendChild(td);
+    }
+    t.appendChild(tr);
+  }
+  e.appendChild(t);
+  const b = el('button', null, '再飞一程'); b.onclick = start; e.appendChild(b);
+}
+
+function start() {
+  flock = new Flock(); acts = [];
+  document.getElementById('now').innerHTML = '';
+  document.getElementById('end').innerHTML = '';
+  const now = document.getElementById('now');
+  now.appendChild(el('p', null, '你在左边，挨着领头的灰背。小的在你后头。'));
+  drawSky(); pad();
+}
+
+document.addEventListener('keydown', ev => { if (ev.key === ' ') { ev.preventDefault(); go('跟'); } });
+window.addEventListener('resize', () => flock && drawSky());
+start();
+</script>
+</body>
+</html>
