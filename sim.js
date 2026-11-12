@@ -62,7 +62,7 @@ class Flock {
       const had = this.arms().includes('小的');
       const rest = arm.filter(n => n !== '小的');
       const i = rest.indexOf('你');
-      if (i === rest.length - 1) out.push('你已经在最后。');
+      if (i === rest.length - 1) out.push(arm.includes('小的') ? '你后头只有小的，它跟着你。' : '你已经在最后。');
       else {
         const t = rest[i]; rest[i] = rest[i + 1]; rest[i + 1] = t;
         arm.length = 0; for (const x of rest) arm.push(x);
