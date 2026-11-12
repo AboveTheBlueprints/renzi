@@ -126,17 +126,18 @@ class Flock {
         out.push('小的跟了过来，又挤到你后头。');
     }
     for (const n of this.flying()) this.E[n] -= this.cost(n);
+    let fellLead = false;
     for (const n of this.flying().slice()) {
       if (this.E[n] <= 0) {
         this.E[n] = 0;
         this.down.push([this.step, n]);
-        if (n === this.lead) { this.lead = null; this.pickLead(out); }
-        else this.remove(n);
         out.push(n !== '你' ? `${n}往下落了，落进一块收过的田里，越来越小。` : '你的翅膀抬不起来了，你往下落。');
+        if (n === this.lead) { this.lead = null; this.pickLead(out); fellLead = true; }
+        else this.remove(n);
       }
     }
     const cur = this.lead === this.prev ? this.run : 0;
-    if (this.lead && this.lead !== '你' && (cur >= 4 || this.E[this.lead] < MAXE[this.lead] * 0.45)) {
+    if (this.lead && this.lead !== '你' && this.lead === this.prev && !fellLead && (cur >= 4 || this.E[this.lead] < MAXE[this.lead] * 0.45)) {
       const others = this.arms().filter(n => n !== '老的');
       let best = null, bv = -Infinity;
       for (const n of others) { const v = this.E[n] / MAXE[n]; if (v > bv) { bv = v; best = n; } }
