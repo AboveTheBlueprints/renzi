@@ -149,7 +149,7 @@ class Flock {
         const old = this.lead;
         this.lead = null;
         this.toBack(old);
-        this.pickLead(out);
+        this.pickLead(out, old);
       }
     }
     if (this.lead === '你' && this.E['你'] < 35 && !out.some(o => o.includes('越来越沉')))
